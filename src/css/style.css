@@ -14,7 +14,7 @@ html {
   background-color: #171f21;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 1000px) {
   .flex-container {
     flex-direction: column;
   }
@@ -118,8 +118,6 @@ button {
 
 .topRight > div {
   flex-grow: 2;
-  margin-left: 10px;
-  margin-right: 10px;
 }
 
 .infoTitle {
