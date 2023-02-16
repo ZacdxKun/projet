@@ -1,6 +1,6 @@
 import Chart from "chart.js/auto";
 
-const virgules = 1;
+const virgules = 2;
 
 let initialBalance = 0;
 let balance = 0;
@@ -76,6 +76,18 @@ function getPnlDollars() {
   pnlDollars = newPnlDollars;
 }
 
+function getLargestBalance() {
+  let largestBalance = 0;
+
+  for (let i = 0; i < dataset.length; i++) {
+    if (dataset[i].balance > largestBalance) {
+      largestBalance = dataset[i].balance;
+    }
+  }
+
+  return largestBalance;
+}
+
 function getRiskReward() {
   let potentialProfit = 0;
   let potentialLoss = 0;
@@ -101,6 +113,7 @@ function getRiskReward() {
 
 function getMaxDrawdown() {
   let maxDrawdown = 0;
+  let largestBalance = getLargestBalance();
 
   for (let i = 0; i < dataset.length; i++) {
     if (dataset[i].profit === null) {
@@ -115,7 +128,7 @@ function getMaxDrawdown() {
       continue;
     }
 
-    let maxLost = initialBalance - dataset[i].balance;
+    let maxLost = largestBalance - dataset[i].balance;
 
     if (maxLost > maxDrawdown) {
       maxDrawdown = maxLost;
@@ -268,7 +281,7 @@ function loadData() {
   document.getElementById("averageWin").innerHTML = `${lastAverageWin.toFixed(virgules)}%`;
   document.getElementById("averageLoss").innerHTML = `${lastAverageLoss.toFixed(virgules)}%`;
 
-  document.getElementById("rewardRisk").innerHTML = `${rewardRisk.toFixed(2)} : 1`;
+  document.getElementById("rewardRisk").innerHTML = `${rewardRisk.toFixed(2)}:1`;
   document.getElementById("maxDrawdown").innerHTML = `${lastMaxDrawdown.toFixed(virgules)}%`;
 
   if (pnlPercent > 0) {
