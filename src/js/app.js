@@ -11,7 +11,9 @@ let breakeven = 0;
 let winrate = 0;
 let pnlPercent = 0;
 let pnlDollars = 0;
+
 let lastMaxDrawdown = 0;
+let rewardRisk = 0;
 
 let largestProfit = [];
 let lastLargestProfit = 0;
@@ -46,6 +48,7 @@ function calculateAllData(data) {
   getWinrate();
   getPnlPercent();
   getPnlDollars();
+  getRiskReward();
   maxDrawdownPercent();
   getLargestProfits(data);
   getLargestLosses(data);
@@ -71,6 +74,29 @@ function getPnlDollars() {
   let newPnlDollars = (balance - initialBalance).toFixed(2);
 
   pnlDollars = newPnlDollars;
+}
+
+function getRiskReward() {
+  let potentialProfit = 0;
+  let potentialLoss = 0;
+
+  for (let i = 0; i < dataset.length; i++) {
+    if (dataset[i].loss === null) {
+      continue;
+    } else if (dataset[i].balance === null) {
+      continue;
+    }
+
+    if (dataset[i].loss === false) {
+      potentialProfit += dataset[i].balance - initialBalance;
+    } else {
+      potentialLoss += dataset[i].balance - initialBalance;
+    }
+  }
+
+  let newRewardRisk = (potentialProfit + initialBalance) / (initialBalance - potentialLoss) || 0;
+
+  rewardRisk = newRewardRisk;
 }
 
 function getMaxDrawdown() {
@@ -242,6 +268,7 @@ function loadData() {
   document.getElementById("averageWin").innerHTML = `${lastAverageWin.toFixed(virgules)}%`;
   document.getElementById("averageLoss").innerHTML = `${lastAverageLoss.toFixed(virgules)}%`;
 
+  document.getElementById("rewardRisk").innerHTML = `${rewardRisk.toFixed(2)} : 1`;
   document.getElementById("maxDrawdown").innerHTML = `${lastMaxDrawdown.toFixed(virgules)}%`;
 
   if (pnlPercent > 0) {
