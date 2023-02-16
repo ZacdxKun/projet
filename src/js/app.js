@@ -236,8 +236,8 @@ function loadData() {
   document.getElementById("profitTrade").innerHTML = `${lastLargestProfit.toFixed(virgules)}%`;
   document.getElementById("lossTrade").innerHTML = `${lastLargestLoss.toFixed(virgules)}%`;
 
-  document.getElementById("consecWins").innerHTML = `${lastMaxConsecWin.toFixed(virgules)}`;
-  document.getElementById("consecLoss").innerHTML = `${lastMaxConsecLoss.toFixed(virgules)}`;
+  document.getElementById("consecWins").innerHTML = `${lastMaxConsecWin}`;
+  document.getElementById("consecLoss").innerHTML = `${lastMaxConsecLoss}`;
 
   document.getElementById("averageWin").innerHTML = `${lastAverageWin.toFixed(virgules)}%`;
   document.getElementById("averageLoss").innerHTML = `${lastAverageLoss.toFixed(virgules)}%`;
