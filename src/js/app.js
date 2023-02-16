@@ -458,11 +458,11 @@ function loadSchema(data) {
 
   let upGradient = ctx.createLinearGradient(0, 0, 0, 300);
   upGradient.addColorStop(0, "rgb(74, 190, 236)");
-  upGradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+  upGradient.addColorStop(1, "rgba(74, 190, 236, 0.01)");
 
   let downGradient = ctx.createLinearGradient(0, 0, 0, 300);
   downGradient.addColorStop(0, "rgb(192,75,75)");
-  downGradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+  downGradient.addColorStop(1, "rgba(192,75,75, 0.01)");
 
   const down = (ctx, value) => (initialBalance >= ctx.p1.parsed.y ? value : undefined);
 
