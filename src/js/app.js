@@ -438,6 +438,10 @@ window.undoLastTrade = function undoLastTrade() {
         totalLoss -= lastTrade.tradeAmount;
       }
 
+      if (lastTrade.breakeven) {
+        totalBreakevenTrades--;
+      }
+
       if (tradesDataset.length > 1) {
         currentBalance = tradesDataset[tradesDataset.length - 2].currentBalance;
       } else if (tradesDataset.length === 1) {
