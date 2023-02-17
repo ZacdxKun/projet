@@ -13,20 +13,20 @@
         <div class="topLeft">
           <div>
             <div>
-              <input id="buttonInitial" placeholder="€" type="number" min="0" />
-              <button class="buttonInitial" onclick="initialBalanceButton()">Set Initial</button>
+              <input type="number" min="0" id="initialDeposit" placeholder="€" />
+              <button class="buttonInitial" onclick="setInititalDeposit()">Set Initial</button>
             </div>
             <div>
-              <input id="buttonAddProfit" placeholder="%" type="number" min="0" />
-              <button class="buttonAddProfit" onclick="addProfitButton()">+ Add Profit</button>
+              <input type="number" min="0" id="buttonAddProfit" placeholder="%" />
+              <button class="buttonAddProfit" onclick="addProfitTrade()">+ Add Profit</button>
             </div>
             <div>
-              <input id="buttonAddLoss" placeholder="%" type="number" min="0" />
-              <button class="buttonAddLoss" onclick="addLossButton()">- Add Loss</button>
+              <input type="number" min="0" id="buttonAddLoss" placeholder="%" />
+              <button class="buttonAddLoss" onclick="addLossTrade()">- Add Loss</button>
             </div>
           </div>
           <div>
-            <button class="buttonUndo" onclick="undoButton()">Undo</button>
+            <button class="buttonUndo" onclick="undoLastTrade()">Undo</button>
           </div>
         </div>
         <div class="topRight">
@@ -45,7 +45,7 @@
           </div>
           <div>
             <p class="infoTitle">Wins / Losses</p>
-            <p class="infoValue" id="winLoss"></p>
+            <p class="infoValue" id="win/loss"></p>
           </div>
           <div>
             <p class="infoTitle">Breakeven Trades</p>
@@ -56,7 +56,7 @@
 
       <div class="flex-container">
         <div class="bottomLeft">
-          <canvas style="width: 800px; height: 600px" id="schema">
+          <canvas style="width: 800px; height: 600px" id="chart">
             <p>Schema fallback content, the schema has not loaded.</p></canvas
           >
         </div>
@@ -79,43 +79,43 @@
           <div class="bottomContainer">
             <div>
               <p class="infoTitle">Profit Trade</p>
-              <p class="infoValue" id="profitTrade"></p>
+              <p class="infoValue" id="largestWinPercent"></p>
             </div>
             <div>
               <p class="infoTitle">Loss Trade</p>
-              <p class="infoValue" id="lossTrade"></p>
+              <p class="infoValue" id="largestLossPercent"></p>
             </div>
           </div>
           <p class="bottomTittle">Max:</p>
           <div class="bottomContainer">
             <div>
               <p class="infoTitle">Consec. Wins</p>
-              <p class="infoValue" id="consecWins"></p>
+              <p class="infoValue" id="maxConsecutiveWins"></p>
             </div>
             <div>
               <p class="infoTitle">Consec. Loss</p>
-              <p class="infoValue" id="consecLoss"></p>
+              <p class="infoValue" id="maxConsecutiveLosses"></p>
             </div>
           </div>
           <p class="bottomTittle">Average:</p>
           <div class="bottomContainer">
             <div>
               <p class="infoTitle">Win</p>
-              <p class="infoValue" id="averageWin"></p>
+              <p class="infoValue" id="averageWinPercent"></p>
             </div>
             <div>
               <p class="infoTitle">Loss</p>
-              <p class="infoValue" id="averageLoss"></p>
+              <p class="infoValue" id="averageLossPercent"></p>
             </div>
           </div>
           <div class="bottomContainer">
             <div>
-              <p class="infoTitle">Reward : Risk</p>
-              <p class="infoValue" id="rewardRisk">???</p>
-            </div>
-            <div>
               <p class="infoTitle">Max Drawdown</p>
               <p class="infoValue" id="maxDrawdown"></p>
+            </div>
+            <div>
+              <p class="infoTitle">Reward : Risk</p>
+              <p class="infoValue" id="reward/risk"></p>
             </div>
           </div>
         </div>

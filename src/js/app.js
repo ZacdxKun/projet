@@ -1,7 +1,12 @@
 import Chart from "chart.js/auto";
 
+/**
+ * --------------------------------
+ * 0. Disclaimer
+ * --------------------------------
+ */
+
 const DISCLAIMER_TEXT = [
-  `Created by Simon Fontaine`,
   `GitHub: https://github.com/Simon-Fontaine`,
   ``,
   `This is a free independent open source project, not affiliated with any financial institution.`,
@@ -9,475 +14,451 @@ const DISCLAIMER_TEXT = [
   `Disclaimer: This is not financial advice. May contain calculation errors. Use at your own risk.`,
 ].join("\n");
 
-const virgules = 2;
+/**
+ * --------------------------------
+ * 1. Code variables
+ * --------------------------------
+ */
 
-let initialBalance = 0;
-let balance = 0;
+const decimalPlaces = 2;
+
+let initialDeposit = 0;
+let currentBalance = 0;
+
+let totalProfit = 0;
+let totalLoss = 0;
+
+let currentProfit = 0;
+
 let totalTrades = 0;
-let wins = 0;
-let losses = 0;
-let breakeven = 0;
+
+let totalWonTrades = 0;
+let totalLostTrades = 0;
+let totalBreakevenTrades = 0;
+
+let totalWonAmount = 0;
+let totalLostAmount = 0;
+
 let winrate = 0;
+
 let pnlPercent = 0;
 let pnlDollars = 0;
 
-let lastMaxDrawdown = 0;
-let rewardRisk = 0;
+let tradesDataset = [];
 
-let largestProfit = [];
-let lastLargestProfit = 0;
+// --------------------------------
 
-let largestLoss = [];
-let lastLargestLoss = 0;
+let averageWinPercent = 0;
+let averageLossPercent = 0;
 
-let maxConsecWin = [];
-let lastMaxConsecWin = 0;
+let maxConsecutiveWins = 0;
+let maxConsecutiveLosses = 0;
+let maxDrawdown = 0;
 
-let maxConsecLoss = [];
-let lastMaxConsecLoss = 0;
+let largestWinPercent = 0;
+let largestLossPercent = 0;
 
-let averageWin = [];
-let lastAverageWin = 0;
-
-let averageLoss = [];
-let lastAverageLoss = 0;
-
-let dataset = [];
-
-function updateLastValues() {
-  lastLargestProfit = largestProfit[largestProfit.length - 1] || 0;
-  lastLargestLoss = largestLoss[largestLoss.length - 1] || 0;
-  lastMaxConsecWin = maxConsecWin[maxConsecWin.length - 1] || 0;
-  lastMaxConsecLoss = maxConsecLoss[maxConsecLoss.length - 1] || 0;
-  lastAverageWin = averageWin[averageWin.length - 1] || 0;
-  lastAverageLoss = averageLoss[averageLoss.length - 1] || 0;
-}
-
-function calculateAllData(data) {
-  getWinrate();
-  getPnlPercent();
-  getPnlDollars();
-  getRiskReward();
-  maxDrawdownPercent();
-  getLargestProfits(data);
-  getLargestLosses(data);
-  getMaxConsecWins(data);
-  getMaxConsecLoses(data);
-  getAverageWins(data);
-  getAverageLosses(data);
-}
-
-function getWinrate() {
-  let newWinrate = ((wins / (totalTrades == 0 ? 1 : totalTrades)) * 100).toFixed(2);
-
-  winrate = newWinrate;
-}
-
-function getPnlPercent() {
-  let newPnlPercent = (((balance - initialBalance) / (initialBalance == 0 ? 1 : initialBalance)) * 100).toFixed(2);
-
-  pnlPercent = newPnlPercent;
-}
-
-function getPnlDollars() {
-  let newPnlDollars = (balance - initialBalance).toFixed(2);
-
-  pnlDollars = newPnlDollars;
-}
-
-function getLargestBalance() {
-  let largestBalance = 0;
-
-  for (let i = 0; i < dataset.length; i++) {
-    if (dataset[i].balance > largestBalance) {
-      largestBalance = dataset[i].balance;
-    }
-  }
-
-  return largestBalance;
-}
-
-function getRiskReward() {
-  let potentialProfit = 0;
-  let potentialLoss = 0;
-
-  for (let i = 0; i < dataset.length; i++) {
-    if (dataset[i].loss === null) {
-      continue;
-    } else if (dataset[i].balance === null) {
-      continue;
-    }
-
-    if (dataset[i].loss === false) {
-      potentialProfit += dataset[i].balance - initialBalance;
-    } else {
-      potentialLoss += dataset[i].balance - initialBalance;
-    }
-  }
-
-  let newRewardRisk = (potentialProfit + initialBalance) / (initialBalance - potentialLoss) || 0;
-
-  rewardRisk = newRewardRisk;
-}
-
-function getMaxDrawdown() {
-  let maxDrawdown = 0;
-  let largestBalance = getLargestBalance();
-
-  for (let i = 0; i < dataset.length; i++) {
-    if (dataset[i].profit === null) {
-      continue;
-    }
-
-    if (dataset[i].loss === false) {
-      continue;
-    }
-
-    if (dataset[i].balance > initialBalance) {
-      continue;
-    }
-
-    let maxLost = largestBalance - dataset[i].balance;
-
-    if (maxLost > maxDrawdown) {
-      maxDrawdown = maxLost;
-    }
-  }
-
-  return maxDrawdown;
-}
-
-function maxDrawdownPercent() {
-  let newMaxDrawdown = getMaxDrawdown();
-
-  lastMaxDrawdown = (newMaxDrawdown / (initialBalance == 0 ? 1 : initialBalance)) * 100;
-}
-
-function getLargestProfits(data) {
-  for (let i = 0; i < data.length; i++) {
-    if (data[i].profit === null || data[i].loss === true || data[i].loss === null) {
-      continue;
-    }
-
-    if (data[i].profit > lastLargestProfit) {
-      largestProfit.push(data[i].profit);
-    }
-  }
-}
-
-function getLargestLosses(data) {
-  for (let i = 0; i < data.length; i++) {
-    if (data[i].profit === null || data[i].loss === false || data[i].loss === null) {
-      continue;
-    }
-
-    if (data[i].profit > lastLargestLoss) {
-      largestLoss.push(data[i].profit);
-    }
-  }
-}
-
-function getMaxConsecWins(data) {
-  let temp = 0;
-
-  for (let i = 0; i < data.length; i++) {
-    if (data[i].loss === null) {
-      continue;
-    }
-
-    if (data[i].loss === false) {
-      temp += 1;
-
-      if (temp > lastMaxConsecWin) {
-        maxConsecWin.push(temp);
-      }
-    } else {
-      temp = 0;
-    }
-  }
-}
-
-function getMaxConsecLoses(data) {
-  let temp = 0;
-
-  for (let i = 0; i < data.length; i++) {
-    if (data[i].loss === null) {
-      continue;
-    }
-
-    if (data[i].loss === true) {
-      temp += 1;
-
-      if (temp > lastMaxConsecLoss) {
-        maxConsecLoss.push(temp);
-      }
-    } else {
-      temp = 0;
-    }
-  }
-}
-
-function getAverageWins(data) {
-  let temp = 0;
-  let count = 0;
-
-  for (let i = 0; i < data.length; i++) {
-    if (data[i].loss === null) {
-      continue;
-    } else if (data[i].profit === null) {
-      continue;
-    }
-
-    if (data[i].loss === false) {
-      temp += data[i].profit;
-      count += 1;
-    }
-  }
-
-  if (isNaN(temp)) {
-    averageWin.push(0);
-  } else {
-    averageWin.push(temp / count);
-  }
-}
-
-function getAverageLosses(data) {
-  let temp = 0;
-  let count = 0;
-
-  for (let i = 0; i < data.length; i++) {
-    if (data[i].loss === null) {
-      continue;
-    } else if (data[i].profit === null) {
-      continue;
-    }
-
-    if (data[i].loss === true) {
-      temp += data[i].profit;
-      count += 1;
-    }
-  }
-
-  if (isNaN(temp)) {
-    averageLoss.push(0);
-  } else {
-    averageLoss.push(temp / count);
-  }
-}
+/**
+ * --------------------------------
+ * 2. Functions
+ * --------------------------------
+ */
 
 document.addEventListener("DOMContentLoaded", function () {
   console.log(DISCLAIMER_TEXT);
-  loadSchema(dataset);
-  loadData();
+  createInitialChart();
+  displayAll();
 });
 
-function loadData() {
-  calculateAllData(dataset);
-  updateLastValues(dataset);
+function displayHtmlElement(elementId, value) {
+  document.getElementById(elementId).innerHTML = value;
+}
 
-  document.getElementById("winrate").innerHTML = `${winrate}%`;
-  document.getElementById("pnlPercent").innerHTML = `${pnlPercent}%`;
-  document.getElementById("pnlDollars").innerHTML = `$${pnlDollars}`;
-  document.getElementById("winLoss").innerHTML = `${wins}W / ${losses}L`;
-  document.getElementById("totalTrades").innerHTML = `${totalTrades}`;
-  document.getElementById("breakeven").innerHTML = `${breakeven}`;
+function displayAll(undo) {
+  calculateAllData();
+  updateChart(undo);
 
-  document.getElementById("profitTrade").innerHTML = `${lastLargestProfit.toFixed(virgules)}%`;
-  document.getElementById("lossTrade").innerHTML = `${lastLargestLoss.toFixed(virgules)}%`;
+  // Top table
+  displayHtmlElement("winrate", `${winrate.toFixed(decimalPlaces)}%`);
+  displayHtmlElement("pnlPercent", `${pnlPercent.toFixed(decimalPlaces)}%`);
+  displayHtmlElement("pnlDollars", `$${pnlDollars.toFixed(decimalPlaces)}`);
+  displayHtmlElement("totalTrades", totalTrades);
+  displayHtmlElement("win/loss", `${totalWonTrades}W / ${totalLostTrades}L`);
+  displayHtmlElement("breakeven", totalBreakevenTrades);
 
-  document.getElementById("consecWins").innerHTML = `${lastMaxConsecWin}`;
-  document.getElementById("consecLoss").innerHTML = `${lastMaxConsecLoss}`;
+  // Bottom table
+  displayHtmlElement("averageWinPercent", `${averageWinPercent.toFixed(decimalPlaces)}%`);
+  displayHtmlElement("averageLossPercent", `${averageLossPercent.toFixed(decimalPlaces)}%`);
+  displayHtmlElement("maxConsecutiveWins", `${maxConsecutiveWins}`);
+  displayHtmlElement("maxConsecutiveLosses", `${maxConsecutiveLosses}`);
+  displayHtmlElement("largestWinPercent", `${largestWinPercent.toFixed(decimalPlaces)}%`);
+  displayHtmlElement("largestLossPercent", `${largestLossPercent.toFixed(decimalPlaces)}%`);
+  displayHtmlElement("maxDrawdown", `${maxDrawdown.toFixed(decimalPlaces)}%`);
 
-  document.getElementById("averageWin").innerHTML = `${lastAverageWin.toFixed(virgules)}%`;
-  document.getElementById("averageLoss").innerHTML = `${lastAverageLoss.toFixed(virgules)}%`;
+  colorDisplayElement();
+}
 
-  document.getElementById("rewardRisk").innerHTML = `${rewardRisk.toFixed(2)}:1`;
-  document.getElementById("maxDrawdown").innerHTML = `${lastMaxDrawdown.toFixed(virgules)}%`;
-
+function colorDisplayElement() {
   if (pnlPercent > 0) {
     document.getElementById("pnlPercent").style.color = "#10b981";
   } else {
     document.getElementById("pnlPercent").style.color = "#ef4444";
   }
 
-  if (wins > losses) {
-    document.getElementById("totalTrades").style.color = "#10b981";
+  if (winrate >= 50) {
+    document.getElementById("winrate").style.color = "#10b981";
   } else {
-    document.getElementById("totalTrades").style.color = "#ef4444";
+    document.getElementById("winrate").style.color = "#ef4444";
   }
 
-  document.getElementById("profitTrade").style.color = "#10b981";
-  document.getElementById("lossTrade").style.color = "#ef4444";
+  if (averageWinPercent > averageLossPercent) {
+    document.getElementById("averageWinPercent").style.color = "#10b981";
+    document.getElementById("averageLossPercent").style.color = "#10b981";
+  } else {
+    document.getElementById("averageWinPercent").style.color = "#ef4444";
+    document.getElementById("averageLossPercent").style.color = "#ef4444";
+  }
 
-  document.getElementById("consecWins").style.color = "#10b981";
-  document.getElementById("consecLoss").style.color = "#ef4444";
+  if (maxConsecutiveWins > maxConsecutiveLosses) {
+    document.getElementById("maxConsecutiveWins").style.color = "#10b981";
+    document.getElementById("maxConsecutiveLosses").style.color = "#10b981";
+  } else {
+    document.getElementById("maxConsecutiveWins").style.color = "#ef4444";
+    document.getElementById("maxConsecutiveLosses").style.color = "#ef4444";
+  }
 
-  document.getElementById("averageWin").style.color = "#10b981";
-  document.getElementById("averageLoss").style.color = "#ef4444";
+  if (largestWinPercent > largestLossPercent) {
+    document.getElementById("largestWinPercent").style.color = "#10b981";
+    document.getElementById("largestLossPercent").style.color = "#10b981";
+  } else {
+    document.getElementById("largestWinPercent").style.color = "#ef4444";
+    document.getElementById("largestLossPercent").style.color = "#ef4444";
+  }
 
-  document.getElementById("rewardRisk").style.color = "#10b981";
-  document.getElementById("maxDrawdown").style.color = "#ef4444";
+  if (maxDrawdown > 20) {
+    document.getElementById("maxDrawdown").style.color = "#ef4444";
+  } else {
+    document.getElementById("maxDrawdown").style.color = "#10b981";
+  }
 }
 
-function updateSchema(newData) {
-  let ctx = document.getElementById("schema").getContext("2d");
+function calculateAllData() {
+  currentProfit = currentBalance - initialDeposit;
+  totalProfit = totalWonAmount - totalLostAmount;
 
-  let newSchema = Chart.getChart(ctx);
+  winrate = (totalWonTrades / (totalTrades === 0 ? 1 : totalTrades)) * 100;
 
-  newSchema.data.labels.push(newData.totalTrades);
-  newSchema.data.datasets.forEach((dataset) => {
-    dataset.data.push(newData.balance);
-  });
-  newSchema.update();
+  pnlPercent = (currentProfit / (initialDeposit === 0 ? 1 : initialDeposit)) * 100;
+  pnlDollars = currentProfit;
+
+  averageWinPercent = getAverageWinPercent();
+  averageLossPercent = getAverageLossPercent();
+
+  maxConsecutiveWins = getMaxConsecutiveWins();
+  maxConsecutiveLosses = getMaxConsecutiveLosses();
+
+  largestWinPercent = getLargestWinPercent();
+  largestLossPercent = getLargestLossPercent();
+
+  maxDrawdown = getMaxDrawdown();
 }
 
-window.initialBalanceButton = function initialBalanceButton() {
-  balance = Number(document.getElementById("buttonInitial").value);
+function updateChart(undo) {
+  let ctx = document.getElementById("chart").getContext("2d");
 
-  totalTrades = 0;
-  wins = 0;
-  losses = 0;
-  breakeven = 0;
-  winrate = 0;
-  pnlPercent = 0;
-  pnlDollars = 0;
+  let newChart = Chart.getChart(ctx);
 
-  largestProfit = [];
-  largestLoss = [];
-  maxConsecWin = [];
-  maxConsecLoss = [];
-  averageLoss = [];
-  averageWin = [];
-
-  lastAverageWin = 0;
-  lastAverageLoss = 0;
-  lastMaxConsecLoss = 0;
-  lastMaxConsecWin = 0;
-  lastLargestLoss = 0;
-  lastLargestProfit = 0;
-
-  let newData = { totalTrades: totalTrades, balance: balance, profit: null, loss: null, breakeven: null };
-
-  dataset = [];
-  dataset.push(newData);
-
-  initialBalance = balance;
-
-  calculateAllData(dataset);
-  updateLastValues(dataset);
-
-  loadData();
-  updateSchema(newData);
-};
-
-window.addProfitButton = function addProfitButton() {
-  let data = Number(document.getElementById("buttonAddProfit").value);
-
-  if (balance === 0) return;
-
-  let isBreakeven = false;
-
-  if (data === 0) {
-    isBreakeven = true;
-    breakeven += 1;
-    totalTrades += 1;
-    wins += 1;
+  if (undo) {
+    newChart.data.labels.pop();
+    newChart.data.datasets.forEach((dataset) => {
+      dataset.data.pop();
+    });
+    newChart.update();
   } else {
-    balance += balance * (data / 100);
-    wins += 1;
-    totalTrades += 1;
+    let newData = tradesDataset[tradesDataset.length - 1];
+
+    if (!newData) return;
+
+    newChart.data.labels.push(newData.totalTrades);
+    newChart.data.datasets.forEach((dataset) => {
+      dataset.data.push(newData.currentBalance);
+    });
+    newChart.update();
   }
+}
 
-  let newData = { totalTrades: totalTrades, balance: balance, profit: data, loss: false, breakeven: isBreakeven };
+function getAverageWinPercent() {
+  let temp = 0;
+  let count = 0;
 
-  dataset.push(newData);
-
-  calculateAllData(dataset);
-  updateLastValues(dataset);
-
-  loadData();
-  updateSchema(newData);
-};
-
-window.addLossButton = function addLossButton() {
-  let data = Number(document.getElementById("buttonAddLoss").value);
-
-  if (balance === 0) return;
-
-  let isBreakeven = false;
-
-  if (data == 0) {
-    isBreakeven = true;
-    breakeven += 1;
-    totalTrades += 1;
-    losses += 1;
-  } else {
-    balance -= balance * (data / 100);
-    losses += 1;
-    totalTrades += 1;
-  }
-
-  let newData = { totalTrades: totalTrades, balance: balance, profit: data, loss: true, breakeven: isBreakeven };
-
-  dataset.push(newData);
-
-  calculateAllData(dataset);
-  updateLastValues(dataset);
-
-  loadData();
-  updateSchema(newData);
-};
-
-window.undoButton = function undoButton() {
-  let ctx = document.getElementById("schema").getContext("2d");
-
-  let newSchema = Chart.getChart(ctx);
-
-  newSchema.data.labels.pop();
-  newSchema.data.datasets.forEach((dataset) => {
-    dataset.data.pop();
-  });
-  newSchema.update();
-
-  if (dataset.length > 0) {
-    if (totalTrades > 0) {
-      totalTrades -= 1;
-
-      let lastData = dataset[dataset.length - 1];
-
-      if (lastData.loss) {
-        losses -= 1;
-      } else {
-        wins -= 1;
-      }
-
-      if (dataset.length > 1) {
-        balance = dataset[dataset.length - 2].balance;
-      } else if (dataset.length > 0) {
-        balance = dataset[dataset.length - 1].balance;
-      } else {
-        balance = 0;
-      }
-
-      largestProfit.pop();
-      largestLoss.pop();
-      maxConsecWin.pop();
-      maxConsecLoss.pop();
-      averageWin.pop();
-      averageLoss.pop();
-
-      dataset.pop();
-
-      calculateAllData(dataset);
-      updateLastValues(dataset);
-
-      loadData();
+  tradesDataset.forEach((trade) => {
+    if (trade.win && trade.win !== null) {
+      count++;
+      temp += trade.tradePercent;
     }
+  });
+
+  return temp / (count === 0 ? 1 : count);
+}
+
+function getAverageLossPercent() {
+  let temp = 0;
+  let count = 0;
+
+  tradesDataset.forEach((trade) => {
+    if (!trade.win && trade.win !== null) {
+      count++;
+      temp += trade.tradePercent;
+    }
+  });
+
+  return temp / (count === 0 ? 1 : count);
+}
+
+function getMaxConsecutiveWins() {
+  let max = 0;
+  let temp = 0;
+
+  tradesDataset.forEach((trade) => {
+    if (trade.win && trade.win !== null) {
+      temp++;
+      if (temp > max) {
+        max = temp;
+      }
+    } else {
+      temp = 0;
+    }
+  });
+
+  return max;
+}
+
+function getMaxConsecutiveLosses() {
+  let max = 0;
+  let temp = 0;
+
+  tradesDataset.forEach((trade) => {
+    if (!trade.win && trade.win !== null) {
+      temp++;
+      if (temp > max) {
+        max = temp;
+      }
+    } else {
+      temp = 0;
+    }
+  });
+
+  return max;
+}
+
+function getLargestWinPercent() {
+  let max = 0;
+
+  tradesDataset.forEach((trade) => {
+    if (trade.win && trade.tradePercent > max && trade.win !== null) {
+      max = trade.tradePercent;
+    }
+  });
+
+  return max;
+}
+
+function getLargestLossPercent() {
+  let max = 0;
+
+  tradesDataset.forEach((trade) => {
+    if (!trade.win && trade.tradePercent > max && trade.win !== null) {
+      max = trade.tradePercent;
+    }
+  });
+
+  return max;
+}
+
+function getMaxDrawdown() {
+  let highest = -Infinity;
+  let lowest = Infinity;
+
+  tradesDataset.forEach((trade) => {
+    if (trade.currentBalance > highest) {
+      highest = trade.currentBalance;
+    }
+  });
+
+  tradesDataset.forEach((trade) => {
+    if (trade.currentBalance < lowest) {
+      lowest = trade.currentBalance;
+    }
+  });
+
+  if (highest === -Infinity || lowest === Infinity) return 0;
+  if (lowest === initialDeposit) return 0;
+
+  temp = highest - lowest;
+  temp = temp / highest;
+  temp = temp * 100;
+
+  return temp;
+}
+
+/**
+ * --------------------------------
+ * 3. Main button functions
+ * --------------------------------
+ */
+
+window.setInititalDeposit = function setInititalDeposit() {
+  if (tradesDataset.length > 0) {
+    alert("Cannot change initial deposit after first trade !\n=> Refresh page to start over");
+    return;
+  }
+
+  initialDeposit = Number(document.getElementById("initialDeposit").value);
+
+  if (initialDeposit < 0) {
+    alert("Please enter a positive number");
+    return;
+  }
+
+  currentBalance = initialDeposit;
+
+  let newDataset = {
+    totalTrades: totalTrades,
+    tradePercent: null,
+    tradeAmount: null,
+    currentBalance: currentBalance,
+    breakeven: null,
+    win: null,
+  };
+
+  tradesDataset.push(newDataset);
+
+  displayAll();
+};
+
+window.addProfitTrade = function addProfitTrade() {
+  if (tradesDataset.length === 0) {
+    alert("Please set initial deposit first");
+    return;
+  }
+
+  let tradePercent = Number(document.getElementById("buttonAddProfit").value);
+
+  if (tradePercent < 0) {
+    alert("Please enter a positive number");
+    return;
+  }
+
+  let tradeAmount = currentBalance * (tradePercent / 100);
+
+  currentBalance += tradeAmount;
+
+  totalProfit += tradeAmount;
+
+  totalWonTrades++;
+  totalTrades++;
+
+  let breakeven = false;
+
+  if (tradePercent === 0) {
+    breakeven = true;
+    totalBreakevenTrades++;
+  }
+
+  let newDataset = {
+    totalTrades: totalTrades,
+    tradePercent: tradePercent,
+    tradeAmount: tradeAmount,
+    currentBalance: currentBalance,
+    breakeven: breakeven,
+    win: true,
+  };
+
+  tradesDataset.push(newDataset);
+
+  displayAll();
+};
+
+window.addLossTrade = function addLossTrade() {
+  if (tradesDataset.length === 0) {
+    alert("Please set initial deposit first");
+    return;
+  }
+
+  let tradePercent = Number(document.getElementById("buttonAddLoss").value);
+
+  if (tradePercent < 0) {
+    alert("Please enter a positive number");
+    return;
+  }
+
+  let tradeAmount = currentBalance * (tradePercent / 100);
+
+  currentBalance -= tradeAmount;
+
+  totalLoss += tradeAmount;
+
+  totalLostTrades++;
+  totalTrades++;
+
+  let breakeven = false;
+
+  if (tradePercent === 0) {
+    breakeven = true;
+    totalBreakevenTrades++;
+  }
+
+  let newDataset = {
+    totalTrades: totalTrades,
+    tradePercent: tradePercent,
+    tradeAmount: tradeAmount,
+    currentBalance: currentBalance,
+    breakeven: breakeven,
+    win: false,
+  };
+
+  tradesDataset.push(newDataset);
+
+  displayAll();
+};
+
+window.undoLastTrade = function undoLastTrade() {
+  if (tradesDataset.length > 0) {
+    if (totalTrades > 0) {
+      totalTrades--;
+
+      let lastTrade = tradesDataset[tradesDataset.length - 1];
+
+      if (lastTrade.win) {
+        totalWonTrades--;
+        totalProfit -= lastTrade.tradeAmount;
+      } else {
+        totalLostTrades--;
+        totalLoss -= lastTrade.tradeAmount;
+      }
+
+      if (tradesDataset.length > 1) {
+        currentBalance = tradesDataset[tradesDataset.length - 2].currentBalance;
+      } else if (tradesDataset.length === 1) {
+        currentBalance = tradesDataset[tradesDataset.length - 1].currentBalance;
+      } else {
+        currentBalance = 0;
+      }
+    }
+
+    tradesDataset.pop();
+    displayAll(true);
   }
 };
 
-function loadSchema(data) {
-  let ctx = document.getElementById("schema").getContext("2d");
+/**
+ * --------------------------------
+ * 4. Draw chart
+ * --------------------------------
+ */
+
+function createInitialChart() {
+  let ctx = document.getElementById("chart").getContext("2d");
 
   let upGradient = ctx.createLinearGradient(0, 0, 0, 300);
   upGradient.addColorStop(0, "rgb(74, 190, 236)");
@@ -487,7 +468,7 @@ function loadSchema(data) {
   downGradient.addColorStop(0, "rgb(192,75,75)");
   downGradient.addColorStop(1, "rgba(192,75,75, 0.01)");
 
-  const down = (ctx, value) => (initialBalance >= ctx.p1.parsed.y ? value : undefined);
+  const down = (ctx, value) => (initialDeposit >= ctx.p1.parsed.y ? value : undefined);
 
   new Chart(ctx, {
     type: "line",
@@ -505,11 +486,11 @@ function loadSchema(data) {
       },
     },
     data: {
-      labels: data.map((row) => row.totalTrades),
+      labels: tradesDataset.map((row) => row.totalTrades),
       datasets: [
         {
-          label: "Schema",
-          data: data.map((row) => row.balance),
+          label: "chart",
+          data: tradesDataset.map((row) => row.currentBalance),
           tension: 0.2,
           borderColor: "rgb(74, 190, 236)",
           segment: {
