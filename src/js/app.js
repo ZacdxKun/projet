@@ -278,6 +278,7 @@ function getLargestLossPercent() {
 function getMaxDrawdown() {
   let highest = -Infinity;
   let lowest = Infinity;
+  let temp = 0;
 
   tradesDataset.forEach((trade) => {
     if (trade.currentBalance > highest) {
