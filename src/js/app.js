@@ -1,5 +1,14 @@
 import Chart from "chart.js/auto";
 
+const DISCLAIMER_TEXT = [
+  `Created by Simon Fontaine`,
+  `GitHub: https://github.com/Simon-Fontaine`,
+  ``,
+  `This is a free independent open source project, not affiliated with any financial institution.`,
+  ``,
+  `Disclaimer: This is not financial advice. May contain calculation errors. Use at your own risk.`,
+].join("\n");
+
 const virgules = 2;
 
 let initialBalance = 0;
@@ -257,6 +266,7 @@ function getAverageLosses(data) {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
+  console.log(DISCLAIMER_TEXT);
   loadSchema(dataset);
   loadData();
 });
