@@ -39,6 +39,9 @@ let totalBreakevenTrades = 0;
 let totalWonAmount = 0;
 let totalLostAmount = 0;
 
+let totalWinPercent = 0;
+let totalLossPercent = 0;
+
 let winrate = 0;
 
 let pnlPercent = 0;
@@ -57,6 +60,9 @@ let maxDrawdown = 0;
 
 let largestWinPercent = 0;
 let largestLossPercent = 0;
+
+let moyenneWin = 0;
+let moyenneLost = 0;
 
 /**
  * --------------------------------
@@ -94,6 +100,8 @@ function displayAll(undo) {
   displayHtmlElement("largestWinPercent", `${largestWinPercent.toFixed(decimalPlaces)}%`);
   displayHtmlElement("largestLossPercent", `${largestLossPercent.toFixed(decimalPlaces)}%`);
   displayHtmlElement("maxDrawdown", `${maxDrawdown.toFixed(decimalPlaces)}%`);
+  displayHtmlElement("reward/risk", `${moyenneWin.toFixed(decimalPlaces)}:${moyenneLost.toFixed(decimalPlaces)}`);
+  displayHtmlElement("r/rMoyen", `${(moyenneWin / (moyenneLost === 0 ? 1 : moyenneLost)).toFixed(decimalPlaces)}`);
 
   colorDisplayElement();
 }
@@ -140,6 +148,18 @@ function colorDisplayElement() {
   } else {
     document.getElementById("maxDrawdown").style.color = "#10b981";
   }
+
+  if (moyenneWin > moyenneLost) {
+    document.getElementById("reward/risk").style.color = "#10b981";
+  } else {
+    document.getElementById("reward/risk").style.color = "#ef4444";
+  }
+
+  if (moyenneWin / (moyenneLost === 0 ? 1 : moyenneLost) > 1) {
+    document.getElementById("r/rMoyen").style.color = "#10b981";
+  } else {
+    document.getElementById("r/rMoyen").style.color = "#ef4444";
+  }
 }
 
 function calculateAllData() {
@@ -161,6 +181,8 @@ function calculateAllData() {
   largestLossPercent = getLargestLossPercent();
 
   maxDrawdown = getMaxDrawdown();
+
+  rewardRisk = getRiskRewardRatio();
 }
 
 function updateChart(undo) {
@@ -302,6 +324,11 @@ function getMaxDrawdown() {
   return temp;
 }
 
+function getRiskRewardRatio() {
+  moyenneWin = totalWinPercent / (totalWonTrades === 0 ? 1 : totalWonTrades);
+  moyenneLost = totalLossPercent / (totalLostTrades === 0 ? 1 : totalLostTrades);
+}
+
 /**
  * --------------------------------
  * 3. Main button functions
@@ -355,6 +382,8 @@ window.addProfitTrade = function addProfitTrade() {
   currentBalance += tradeAmount;
 
   totalProfit += tradeAmount;
+  totalWonAmount += tradeAmount;
+  totalWinPercent += tradePercent;
 
   totalWonTrades++;
   totalTrades++;
@@ -398,6 +427,8 @@ window.addLossTrade = function addLossTrade() {
   currentBalance -= tradeAmount;
 
   totalLoss += tradeAmount;
+  totalLostAmount += tradeAmount;
+  totalLossPercent += tradePercent;
 
   totalLostTrades++;
   totalTrades++;
@@ -433,9 +464,11 @@ window.undoLastTrade = function undoLastTrade() {
       if (lastTrade.win) {
         totalWonTrades--;
         totalProfit -= lastTrade.tradeAmount;
+        totalWinPercent -= lastTrade.tradePercent;
       } else {
         totalLostTrades--;
         totalLoss -= lastTrade.tradeAmount;
+        totalLossPercent -= lastTrade.tradePercent;
       }
 
       if (lastTrade.breakeven) {
