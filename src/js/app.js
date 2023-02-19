@@ -1,3 +1,5 @@
+"use strict";
+
 import Chart from "chart.js/auto";
 
 /**
@@ -182,7 +184,7 @@ function calculateAllData() {
 
   maxDrawdown = getMaxDrawdown();
 
-  rewardRisk = getRiskRewardRatio();
+  getRiskRewardRatio();
 }
 
 function updateChart(undo) {
