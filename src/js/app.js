@@ -103,7 +103,7 @@ function displayAll(undo) {
   displayHtmlElement("largestLossPercent", `${largestLossPercent.toFixed(decimalPlaces)}%`);
   displayHtmlElement("maxDrawdown", `${maxDrawdown.toFixed(decimalPlaces)}%`);
   displayHtmlElement("reward/risk", `${moyenneWin.toFixed(decimalPlaces)}:${moyenneLost.toFixed(decimalPlaces)}`);
-  displayHtmlElement("r/rMoyen", `${(moyenneWin / (moyenneLost === 0 ? 1 : moyenneLost)).toFixed(decimalPlaces)}`);
+  displayHtmlElement("AverageR/R", `${(moyenneWin / (moyenneLost === 0 ? 1 : moyenneLost)).toFixed(decimalPlaces)}`);
 
   colorDisplayElement();
 }
@@ -158,9 +158,9 @@ function colorDisplayElement() {
   }
 
   if (moyenneWin / (moyenneLost === 0 ? 1 : moyenneLost) > 1) {
-    document.getElementById("r/rMoyen").style.color = "#10b981";
+    document.getElementById("AverageR/R").style.color = "#10b981";
   } else {
-    document.getElementById("r/rMoyen").style.color = "#ef4444";
+    document.getElementById("AverageR/R").style.color = "#ef4444";
   }
 }
 
