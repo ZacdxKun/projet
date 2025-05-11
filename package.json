@@ -1,5 +1,22 @@
 {
+<<<<<<< HEAD
   "dependencies": {
     "chart.js": "^4.4.8"
+=======
+  "name": "trading-dashboard",
+  "version": "1.0.0",
+  "license": "MIT",
+  "source": "src/index.html",
+  "scripts": {
+    "dev": "parcel",
+    "build": "parcel build --dist-dir public"
+  },
+  "devDependencies": {
+    "parcel": "^2.6.2"
+  },
+  "dependencies": {
+    "@cubejs-client/core": "^0.31.0",
+    "chart.js": "^4.0.0"
+>>>>>>> 0fd4a250e47ea722d2421db4ebd0ccd5992d5456
   }
 }
