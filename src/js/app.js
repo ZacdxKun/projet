@@ -1,7 +1,5 @@
 "use strict";
 
-import Chart from "chart.js/auto";
-
 /**
  * --------------------------------
  * 0. Disclaimer
@@ -74,8 +72,17 @@ let moyenneLost = 0;
 
 document.addEventListener("DOMContentLoaded", function () {
   console.log(DISCLAIMER_TEXT);
-  createInitialChart();
+  
+  // N'appelez pas createInitialChart() ici
+  // mais seulement après avoir initialisé le dépôt
+  
   displayAll();
+  
+  // Ajouter les event listeners
+  document.querySelector(".buttonInitial").addEventListener("click", setInititalDeposit);
+  document.querySelector(".buttonAddProfit").addEventListener("click", addProfitTrade);
+  document.querySelector(".buttonAddLoss").addEventListener("click", addLossTrade);
+  document.querySelector(".buttonUndo").addEventListener("click", undoLastTrade);
 });
 
 function displayHtmlElement(elementId, value) {
@@ -189,25 +196,30 @@ function calculateAllData() {
 
 function updateChart(undo) {
   let ctx = document.getElementById("chart").getContext("2d");
+  let existingChart = Chart.getChart(ctx);
 
-  let newChart = Chart.getChart(ctx);
+  if (!existingChart) {
+    // Si le graphique n'existe pas encore, créez-le
+    createInitialChart();
+    return;
+  }
 
   if (undo) {
-    newChart.data.labels.pop();
-    newChart.data.datasets.forEach((dataset) => {
+    existingChart.data.labels.pop();
+    existingChart.data.datasets.forEach((dataset) => {
       dataset.data.pop();
     });
-    newChart.update();
+    existingChart.update();
   } else {
     let newData = tradesDataset[tradesDataset.length - 1];
 
     if (!newData) return;
 
-    newChart.data.labels.push(newData.totalTrades);
-    newChart.data.datasets.forEach((dataset) => {
+    existingChart.data.labels.push(newData.totalTrades);
+    existingChart.data.datasets.forEach((dataset) => {
       dataset.data.push(newData.currentBalance);
     });
-    newChart.update();
+    existingChart.update();
   }
 }
 
@@ -337,7 +349,7 @@ function getRiskRewardRatio() {
  * --------------------------------
  */
 
-window.setInititalDeposit = function setInititalDeposit() {
+function setInititalDeposit() {
   if (tradesDataset.length > 0) {
     alert("Cannot change initial deposit after first trade !\n=> Refresh page to start over");
     return;
@@ -345,7 +357,7 @@ window.setInititalDeposit = function setInititalDeposit() {
 
   initialDeposit = Number(document.getElementById("initialDeposit").value);
 
-  if (initialDeposit < 0) {
+  if (initialDeposit <= 0) {
     alert("Please enter a positive number");
     return;
   }
@@ -363,10 +375,12 @@ window.setInititalDeposit = function setInititalDeposit() {
 
   tradesDataset.push(newDataset);
 
+  // Créer le graphique seulement après avoir défini le dépôt initial
+  createInitialChart();
   displayAll();
-};
+}
 
-window.addProfitTrade = function addProfitTrade() {
+function addProfitTrade() {
   if (tradesDataset.length === 0) {
     alert("Please set initial deposit first");
     return;
@@ -409,9 +423,9 @@ window.addProfitTrade = function addProfitTrade() {
   tradesDataset.push(newDataset);
 
   displayAll();
-};
+}
 
-window.addLossTrade = function addLossTrade() {
+function addLossTrade() {
   if (tradesDataset.length === 0) {
     alert("Please set initial deposit first");
     return;
@@ -454,9 +468,9 @@ window.addLossTrade = function addLossTrade() {
   tradesDataset.push(newDataset);
 
   displayAll();
-};
+}
 
-window.undoLastTrade = function undoLastTrade() {
+function undoLastTrade() {
   if (tradesDataset.length > 0) {
     if (totalTrades > 0) {
       totalTrades--;
@@ -489,7 +503,7 @@ window.undoLastTrade = function undoLastTrade() {
     tradesDataset.pop();
     displayAll(true);
   }
-};
+}
 
 /**
  * --------------------------------
@@ -499,6 +513,12 @@ window.undoLastTrade = function undoLastTrade() {
 
 function createInitialChart() {
   let ctx = document.getElementById("chart").getContext("2d");
+  
+  // Vérifier si un graphique existe déjà et le détruire si c'est le cas
+  let existingChart = Chart.getChart(ctx);
+  if (existingChart) {
+    existingChart.destroy();
+  }
 
   let upGradient = ctx.createLinearGradient(0, 0, 0, 300);
   upGradient.addColorStop(0, "rgb(74, 190, 236)");
@@ -510,7 +530,7 @@ function createInitialChart() {
 
   const down = (ctx, value) => (initialDeposit >= ctx.p1.parsed.y ? value : undefined);
 
-  new Chart(ctx, {
+  return new Chart(ctx, {
     type: "line",
     options: {
       responsive: true,

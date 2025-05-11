@@ -163,6 +163,9 @@ button {
   background-color: #202b2e;
   border-radius: 5px;
   flex-grow: 7;
+  width: 100%;
+  position: relative;
+  min-height: 600px;
 }
 
 .bottomRight {
@@ -192,4 +195,10 @@ button {
 .bottomTittle {
   color: white;
   font-weight: bolder;
+}
+
+canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
 }
